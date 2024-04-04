@@ -1,0 +1,8 @@
+[Unit]
+Description=”Extract Roster Data”
+[Service]
+Restart=always
+WorkingDirectory=DIRECTORY_OF_THE_PYTHON_SCRIPT
+ExecStart=PATH_TO_PYTHON_EXECUTABLE SCRIPT.PY
+[Install]
+WantedBy=multi-user target
