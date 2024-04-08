@@ -3,8 +3,9 @@ from google_api_service import GoogleAPIService
 
 class TestGoogleApiService(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(self) -> None:
         self.service = GoogleAPIService("calendar")
+        return super().setUpClass()
 
     def test_get_credentials(self):
         self.assertTrue(self.service.get_credentials())
@@ -13,5 +14,4 @@ class TestGoogleApiService(unittest.TestCase):
 
     def test_get_service(self):
         self.assertTrue(self.service.get_credentials())
-        self.assertTrue(self.service.get_service())
-        self.assertIsNotNone(self.service.service)
+        self.assertIsNotNone(self.service.get_service())

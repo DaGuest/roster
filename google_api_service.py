@@ -21,11 +21,12 @@ class GoogleAPIService:
         self.service_name = service_name
         self.version = self.service_metadata[service_name]["version"]
         self.scope = self.service_metadata[service_name]["scope"]
+        self.get_credentials()
 
     def get_credentials(self):
         if os.path.exists("/home/pi/Roster/roster_data/token.json"):
             try:
-                self.creds = Credentials.from_authorized_user_file("/home/pi/Roster/roster_data/token.json", self.scope)
+                self.creds = Credentials.from_authorized_user_file("/home/pi/Roster/roster_data/token.json", self.scopes)
             except:
                 print("Unable to get credentials from existing token")
         
@@ -61,4 +62,4 @@ class GoogleAPIService:
             except:
                 print("Error with obtaining service")
                 return False
-        return self.service is not None
+        return self.service
