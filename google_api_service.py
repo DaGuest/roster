@@ -8,6 +8,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 class GoogleAPIService:
+    HOMEPATH = "/home/pi/roster/etc/"
     service_metadata = {"gmail": {"version":"v1","scope": "https://www.googleapis.com/auth/gmail.modify"}, 
                "calendar": {"version": "v3", "scope": "https://www.googleapis.com/auth/calendar"}}
     scopes = [service_metadata["calendar"]["scope"], service_metadata["gmail"]["scope"]]
@@ -22,11 +23,12 @@ class GoogleAPIService:
         self.version = self.service_metadata[service_name]["version"]
         self.scope = self.service_metadata[service_name]["scope"]
         self.get_credentials()
+        self.get_service()
 
     def get_credentials(self):
-        if os.path.exists("/home/pi/roster/etc/token.json"):
+        if os.path.exists(self.HOMEPATH + "token.json"):
             try:
-                self.creds = Credentials.from_authorized_user_file("/home/pi/roster/etc/token.json", self.scopes)
+                self.creds = Credentials.from_authorized_user_file(self.HOMEPATH + "token.json", self.scopes)
             except:
                 print("Unable to get credentials from existing token")
         
@@ -42,13 +44,13 @@ class GoogleAPIService:
             # Credentials don't exist yet
             else:
                 try:
-                    flow = InstalledAppFlow.from_client_secrets_file("/home/pi/roster/etc/credentials.json", self.scopes)
+                    flow = InstalledAppFlow.from_client_secrets_file(self.HOMEPATH + "credentials.json", self.scopes)
                     self.creds = flow.run_local_server(port=0)
                 except:
                     print("Unable to create credentials")
                     return False
 
-            with open("/home/pi/roster/etc/token.json", "w") as token:
+            with open(self.HOMEPATH + "token.json", "w") as token:
                 token.write(self.creds.to_json())
         return True
         
@@ -63,3 +65,28 @@ class GoogleAPIService:
                 print("Error with obtaining service")
                 return False
         return self.service
+
+class GoogleCalendarAPIService(GoogleAPIService):
+    def __init__(self):
+        super().__init__("calendar")
+
+    def get_list_of_calendars(self):
+        if self.service_name != 'calendar':
+            return None
+        return self.service.calendarList().list().execute()
+    
+class GoogleMailAPIService(GoogleAPIService):
+    def __init__(self):
+        super().__init__("gmail")
+
+    def get_messages(self):
+        return self.service.users().messages().list(userId="me", q="Duty from:noreply@klm.com", maxResults=10).execute().get('messages', [])
+
+    def get_message(self, message_id):
+        return self.service.users().messages().get(userId='me', id=message_id).execute()
+    
+    def get_attachment(self, message_id, attachment_id):
+        return self.service.users().messages().attachments().get(userId='me', messageId=message_id, id=attachment_id).execute()
+    
+    def delete_mail(self, message_id):
+        self.service.users().messsages().trash(userId='me', id=message_id).execute()
