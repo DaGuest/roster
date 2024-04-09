@@ -9,6 +9,7 @@ from googleapiclient.errors import HttpError
 
 class GoogleAPIService:
     HOMEPATH = "/home/pi/roster/etc/"
+    TIMEZONE = "Etc/UTC"
     service_metadata = {"gmail": {"version":"v1","scope": "https://www.googleapis.com/auth/gmail.modify"}, 
                "calendar": {"version": "v3", "scope": "https://www.googleapis.com/auth/calendar"}}
     scopes = [service_metadata["calendar"]["scope"], service_metadata["gmail"]["scope"]]
@@ -71,9 +72,16 @@ class GoogleCalendarAPIService(GoogleAPIService):
         super().__init__("calendar")
 
     def get_list_of_calendars(self):
-        if self.service_name != 'calendar':
-            return None
         return self.service.calendarList().list().execute()
+    
+    def get_events(self, calendar_id, starttime, endtime):
+        return self.service.events().list(calendarId=calendar_id, timeMin=starttime, timeMax=endtime, timeZone=self.TIMEZONE).execute()
+    
+    def delete_event(self, calendar_id, event_id):
+        self.service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
+
+    def insert_event(self, calendar_id, body):
+        self.service.events().insert(calendarId=calendar_id, body=body).execute()
     
 class GoogleMailAPIService(GoogleAPIService):
     def __init__(self):

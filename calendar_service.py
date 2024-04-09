@@ -3,15 +3,13 @@ from datetime import datetime
 import google_api_service as gapi
 
 class CalendarService:
-    TIMEZONE = "Etc/UTC"
-
     def __init__(self):
-        self.service = gapi.GoogleAPIService("calendar").get_service()
+        self.service = gapi.GoogleCalendarAPIService()
         self.calendar_id = None
         self.events = []
     
     def _get_calendar_id(self, calendar_name):
-        calendar_list = self.service.calendarList().list().execute()
+        calendar_list = self.service.get_list_of_calendars()
         for calendar in calendar_list["items"]:
             if calendar["summary"] == calendar_name:
                 self.calendar_id = calendar["id"]
@@ -20,10 +18,7 @@ class CalendarService:
         self.events.clear()
         if (self.calendar_id is None):
             self._get_calendar_id("KLM")
-        try:
-            self.events_list = self.service.events().list(calendarId=self.calendar_id, timeMin=starttime, timeMax=endtime, timeZone=self.TIMEZONE).execute()
-        except:
-            print("Unable to get events from calendar.")
+        self.events_list = self.service.get_events(self.calendar_id, starttime, endtime)
 
         # Create CalendarEvents from acquired item list
         for item in self.events_list["items"]:
@@ -36,13 +31,13 @@ class CalendarService:
         for event in self.events:
             for new_event in new_events:
                 if event.starttime.date() == new_event.starttime.date():
-                    self.service.events().delete(calendarId=self.calendar_id, eventId=event.event_id).execute()
+                    
                     break
 
     def insert_events(self, new_events):
         if new_events:
             for event in new_events:
-                self.service.events().insert(calendarId=self.calendar_id, body=event.to_dict()).execute()
+                self.service.insert_event(self.calendar_id, event.to_dict())
 
 class CalendarEvent:    
     DATETIMEFORMAT = r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}"
@@ -82,10 +77,10 @@ class CalendarEvent:
         return {"summary": self.summary, 
                 "start": {
                     "dateTime": self.starttime.strftime(self.DATETIMESTRFFORMAT),
-                    "timeZone": CalendarService.TIMEZONE
+                    "timeZone": gapi.GoogleAPIService.TIMEZONE
                 },
                 "end": {
                     "dateTime": self.endtime.strftime(self.DATETIMESTRFFORMAT),
-                    "timeZone": CalendarService.TIMEZONE
+                    "timeZone": gapi.GoogleAPIService.TIMEZONE
                 }
                 } 
