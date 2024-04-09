@@ -24,9 +24,9 @@ class GoogleAPIService:
         self.get_credentials()
 
     def get_credentials(self):
-        if os.path.exists("/home/pi/Roster/roster_data/token.json"):
+        if os.path.exists("/home/pi/roster/etc/token.json"):
             try:
-                self.creds = Credentials.from_authorized_user_file("/home/pi/Roster/roster_data/token.json", self.scopes)
+                self.creds = Credentials.from_authorized_user_file("/home/pi/roster/etc/token.json", self.scopes)
             except:
                 print("Unable to get credentials from existing token")
         
@@ -42,13 +42,13 @@ class GoogleAPIService:
             # Credentials don't exist yet
             else:
                 try:
-                    flow = InstalledAppFlow.from_client_secrets_file("/home/pi/Roster/roster_data/credentials.json", self.scopes)
+                    flow = InstalledAppFlow.from_client_secrets_file("/home/pi/roster/etc/credentials.json", self.scopes)
                     self.creds = flow.run_local_server(port=0)
                 except:
                     print("Unable to create credentials")
                     return False
 
-            with open("/home/pi/Roster/roster_data/token.json", "w") as token:
+            with open("/home/pi/roster/etc/token.json", "w") as token:
                 token.write(self.creds.to_json())
         return True
         

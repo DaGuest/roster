@@ -51,8 +51,10 @@ class CalendarEvent:
     def __init__(self, summary, starttime, endtime):
         self.summary = summary
         if re.search(self.DATETIMEFORMAT, starttime):
+            starttime = re.search(self.DATETIMEFORMAT, starttime).group(0)
             self.starttime = datetime.fromisoformat(starttime)
         if re.search(self.DATETIMEFORMAT, endtime):
+            endtime = re.search(self.DATETIMEFORMAT, endtime).group(0)
             self.endtime = datetime.fromisoformat(endtime)
     
     def get_starttime_string(self):

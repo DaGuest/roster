@@ -7,7 +7,7 @@ class TestCalendarService(unittest.TestCase):
         self.event1 = calendar_service.CalendarEvent("KL1234 AMS", "2024-04-08T09:00:00Z", "2024-04-08T09:50:00Z")
         self.event2 = calendar_service.CalendarEvent("KL5678 AMS", "2024-04-08T10:00:00Z", "2024-04-08T10:50:00Z")
         self.event3 = calendar_service.CalendarEvent("KL4321 AMS", "2024-04-08T10:20:00Z", "2024-04-08T10:40:00Z")
-        self.event4 = calendar_service.CalendarEvent("Reserve", "2024-04-08T08:30:00Z", "2024-04-08T20:30:00Z")
+        self.event4 = calendar_service.CalendarEvent("Reserve", "2024-04-08T09:00:00Z", "2024-04-08T20:30:00Z")
         self.event1copy = calendar_service.CalendarEvent("KL8765 AMS", "2024-04-08T09:00:00Z", "2024-04-08T09:50:00Z")
     
     def test_get_calendar_id(self):
