@@ -18,3 +18,6 @@ class TestGoogleApiService(unittest.TestCase):
 
     def test_get_messages(self):
         self.assertIsNotNone(self.mail_service.get_messages())
+
+    def test_get_list_calendars(self):
+        self.assertIsNotNone(self.calendar_service.get_list_of_calendars())
