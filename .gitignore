@@ -5,3 +5,4 @@ __pycache__
 tests/__pycache__
 etc/credentials.json
 etc/token.json
+.DS_Store
