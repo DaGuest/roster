@@ -1,0 +1,4 @@
+services:
+  roster:
+    container_name: roster
+    build: .

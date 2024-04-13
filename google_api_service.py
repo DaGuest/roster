@@ -8,7 +8,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 class GoogleAPIService:
-    HOMEPATH = "/home/pi/roster/etc/"
+    HOMEPATH = "etc/"
     TIMEZONE = "Etc/UTC"
     service_metadata = {"gmail": {"version":"v1","scope": "https://www.googleapis.com/auth/gmail.modify"}, 
                "calendar": {"version": "v3", "scope": "https://www.googleapis.com/auth/calendar"}}

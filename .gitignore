@@ -6,3 +6,4 @@ tests/__pycache__
 etc/credentials.json
 etc/token.json
 etc/roster.pdf
+.DS_Store
