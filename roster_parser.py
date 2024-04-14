@@ -4,14 +4,29 @@ import pypdf
 
 class RosterParser:
     def convert_rosterpdf_to_text(self):
-        reader = pypdf.PdfReader(os.getcwd() + "/etc/roster.pdf")
-        page = reader.pages[0]
-        self.text = page.extract_text()
-        self.text = re.sub(r"\s+", "", self.text)
-        return self.text
-    
+        try:
+            reader = pypdf.PdfReader(os.getcwd() + "/etc/roster.pdf")
+            page = reader.pages[0]
+            self.text = page.extract_text()
+            self.text = re.sub(r"\s+", "", self.text)
+            self.text = re.sub(r"\n", "", self.text)
+            return True
+        except Exception as error:
+            print("Unable to convert pdf to text: ", error)
+            return False
+        
     def parse_flight_events(self):
-        events = []
-        pattern_AMS_event = r"([A-Z][a-z]{2}\d\dC\/I[A-Z]{3}\d{4}(?:\KL(\d{4}|\d{3})[A-Z]{3}\d{8}[A-Z]{3}(?:E7W|E90|\d{3}))*C\/O\d{4}[A-Z]{3}\[FDP\d\d:\d\d\]"
-        events.append(re.findall(pattern_AMS_event, self.text))
-        return events
+        pattern_flight_events = r"[A-Z][a-z]{2}\d\d(?:PickUp|C\/I)(?:.*?)\[FDP\d\d:\d\d\]"
+        return re.findall(pattern_flight_events, self.text)
+    
+    def parse_sby_events(self):
+        pattern_SBY_event = r"[A-Z][a-z]{2}\d\dSBY\_[A-Z]{4}\d{8}\[FDP\d\d:\d\d\]"
+        return re.findall(pattern_SBY_event, self.text)
+    
+    def parse_sim_events(self):
+        pattern = r"[A-Z][a-z]{2}\d\dT(?:.*?)\[FDP\d\d:\d\d\]"
+        return re.findall(pattern, self.text)
+    
+    def parse_medical_events(self):
+        pattern = r"[A-Z][a-z]{2}\d\dMMCS(?:.*?)\[FDP\d\d:\d\d\]"
+        return re.findall(pattern, self.text)
