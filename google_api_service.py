@@ -8,7 +8,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 class GoogleAPIService:
-    HOMEPATH = "etc/"
+    HOMEPATH = os.getcwd() + "/etc/"
     TIMEZONE = "Etc/UTC"
     service_metadata = {"gmail": {"version":"v1","scope": "https://www.googleapis.com/auth/gmail.modify"}, 
                "calendar": {"version": "v3", "scope": "https://www.googleapis.com/auth/calendar"}}
@@ -47,8 +47,8 @@ class GoogleAPIService:
                 try:
                     flow = InstalledAppFlow.from_client_secrets_file(self.HOMEPATH + "credentials.json", self.scopes)
                     self.creds = flow.run_local_server(port=0)
-                except:
-                    print("Unable to create credentials")
+                except Exception as error:
+                    print("Unable to create credentials, error: ", error)
                     return False
 
             with open(self.HOMEPATH + "token.json", "w") as token:

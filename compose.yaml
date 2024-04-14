@@ -1,4 +1,7 @@
 services:
   roster:
     container_name: roster
+    network_mode: host
     build: .
+    volumes:
+      - ./etc:/app/etc
