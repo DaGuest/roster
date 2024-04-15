@@ -1,8 +1,10 @@
 import google_api_service as gapi
 import base64
+import logging
 
 class MailService:
     def __init__(self):
+        self.logger = logging.getLogger(__name__)
         self.service = gapi.GoogleMailAPIService()
         self.messages = None
 
@@ -12,6 +14,7 @@ class MailService:
     
     def get_attachment(self):
         if not self.check_mail():
+            self.logger.info("No roster in e-mail")
             return False
         message_id = self.messages[0]['id']
         message = self.service.get_message(message_id)
@@ -29,4 +32,6 @@ class MailService:
 
                 with open(path, 'wb') as f:
                     f.write(file_data)
+                    f.close()
+        self.logger.info("Attachment downloaded")
         return True

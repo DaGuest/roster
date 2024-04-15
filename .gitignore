@@ -6,4 +6,5 @@ tests/__pycache__
 etc/credentials.json
 etc/token.json
 etc/roster.pdf
+etc/log.txt
 .DS_Store
