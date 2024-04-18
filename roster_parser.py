@@ -84,6 +84,13 @@ class RosterParser:
         self.construct_events(events_text, "Medical")
         self.logger.info("Parsed medical events")
 
+    def parse_layover_events(self):
+        pattern = r"[A-Z][a-z]{2}\d\dXH\d[A-Z]{3}"
+        events_text = re.findall(pattern, self.text)
+        events_text = [text + "09002100" for text in events_text]
+        self.construct_events(events_text, "Dagover")
+        self.logger.info("Parsed layover events")
+
     def parse_all_events(self):
         self.convert_rosterpdf_to_text()
         self.parse_period()
@@ -91,6 +98,7 @@ class RosterParser:
         self.parse_medical_events()
         self.parse_sby_events()
         self.parse_sim_events()
+        self.parse_layover_events()
     
     ### Constructs a datetime from a weekday-day string that fits inside the period
     ### Arg: 
