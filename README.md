@@ -17,3 +17,10 @@ Use `python -c "import os; print(os.environ['_'])"` to find where that is.
 
 To stop the service use:
 `systemctl stop roster.service`
+
+## Installing python modules
+Install the following modules using `apt install`:
+`python3-googleapi python3-google-auth-oauthlib python3-pypdf`
+
+Place credentials.json file into `roster/etc/` folder
+
