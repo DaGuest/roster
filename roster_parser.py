@@ -60,6 +60,18 @@ class RosterParser:
         events_text = re.findall(pattern_SBY_event, self.text)
         self.construct_events(events_text, "Reserve")
         self.logger.info("Parsed sby events")
+
+    def parse_pickup_events(self):
+        # Pick up events
+        pattern_pickup_events = r"[A-Z][a-z]{2}\d\d(?:PickUp)(?:.*?)\d{4}"
+        events_text = re.findall(pattern_pickup_events, self.text)
+        events_text = [x + x[-4:] for x in events_text]
+        self.construct_events(events_text, "Pick Up")
+        # Aanmeld events
+        pattern_ciams_events = r"[A-Z][a-z]{2}\d\d(?:C\/IAMS)(?:.*?)\d{4}"
+        events_text = re.findall(pattern_ciams_events, self.text)
+        events_text = [x + x[-4:] for x in events_text]
+        self.construct_events(events_text, "Aanmelden")
     
     def parse_sim_events(self):
         pattern = r"[A-Z][a-z]{2}\d\dT(?:.*?)\[FDP\d\d:\d\d\]"
@@ -95,6 +107,7 @@ class RosterParser:
         self.convert_rosterpdf_to_text()
         self.parse_period()
         self.parse_flight_events()
+        self.parse_pickup_events()
         self.parse_medical_events()
         self.parse_sby_events()
         self.parse_sim_events()
