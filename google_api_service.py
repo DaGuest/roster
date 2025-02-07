@@ -51,8 +51,8 @@ class GoogleAPIService:
                     print("Unable to create credentials, error: ", error)
                     return False
 
-            with open(self.HOMEPATH + "token.json", "w") as token:
-                token.write(self.creds.to_json())
+            # with open(self.HOMEPATH + "token.json", "w") as token:
+            #     token.write(self.creds.to_json())
         return True
         
     def get_service(self):

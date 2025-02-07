@@ -75,14 +75,14 @@ class RosterParser:
     
     def parse_sim_events(self):
         pattern = r"[A-Z][a-z]{2}\d\dT(?:.*?)\[FDP\d\d:\d\d\]"
-        pattern_title = r"(?<=[A-z]{3}\d\d)T.*?(?=[A-Z]_[A-Z]\d)"
+        pattern_title = r"(?<=[A-z]{3}\d\d)T.*?(?=[A-Z]\d_[A-Z]\d)"
         sim_times = {"TSLOE": 74, "TSTR": 119, "TSLPC": 74}
         offset = 1
         events_text = re.findall(pattern, self.text)
         for event in events_text:
             date = self.get_date(event)
             summary = re.search(pattern_title, event).group(0)
-            for training_id in sim_times.keys:
+            for training_id in sim_times.keys():
                 reg_match = re.search(training_id, summary)
                 if reg_match is not None:
                     offset += sim_times[reg_match.group(0)]
@@ -130,7 +130,7 @@ class RosterParser:
         
         day_text = re.search(r"\d\d", date_text).group(0)
         weekday_text = re.search(r"[A-z]{3}", date_text).group(0)
-        weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sum"]
+        weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         
         return_date = datetime.strptime(day_text + month_year_start, pattern_datetime_date)
 
