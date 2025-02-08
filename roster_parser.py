@@ -128,14 +128,15 @@ class RosterParser:
         month_year_start = self.start_period.strftime("%b%y")
         month_year_end = self.end_period.strftime("%b%y")
         
-        day_text = re.search(r"\d\d", date_text).group(0)
+        day_num_text = re.search(r"\d\d", date_text).group(0)
         weekday_text = re.search(r"[A-z]{3}", date_text).group(0)
         weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         
-        return_date = datetime.strptime(day_text + month_year_start, pattern_datetime_date)
+        return_date = datetime.strptime(day_num_text + month_year_start, pattern_datetime_date)
 
-        if weekdays[return_date.weekday()] != weekday_text:
-            return_date = datetime.strptime(day_text + month_year_end, pattern_datetime_date)
+        # Check if date is in end month of period
+        if int(day_num_text) <= self.end_period.day and int(day_num_text) < self.start_period.day:
+            return_date = datetime.strptime(day_num_text + month_year_end, pattern_datetime_date)
         return return_date
     
     def get_datetimes(self, event_text, date, offset=None):
