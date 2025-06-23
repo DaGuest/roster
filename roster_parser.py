@@ -25,7 +25,7 @@ class RosterParser:
             return False
         
     def parse_period(self):
-        pattern_period_text = r"(?<=Period:)(?:.*?)(?=contract)"
+        pattern_period_text = r"(?<=Period:)(\d{2}[A-Z][a-z]{2}\d{2}-\d{2}[A-Z][a-z]{2}\d{2})"
         pattern_single_period = r"\d\d[A-z]{3}\d\d"
         pattern_datetime = "%d%b%y"
 
