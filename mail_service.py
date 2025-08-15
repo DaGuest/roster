@@ -4,17 +4,28 @@ import logging
 
 class MailService:
     def __init__(self):
+        """
+        Initialize the MailService, setting up the Google Mail API service and logger.
+        """
         self.logger = logging.getLogger(__name__)
         self.service = gapi.GoogleMailAPIService()
         self.messages = None
 
     def check_mail(self) -> bool:
+        """
+        Check if there are any roster messages in the user's Gmail inbox..
+        Returns True if messages are found, False otherwise.
+        """
         if not (self.service or self.service.get_service()):
             return False
         self.messages = self.service.get_messages()
         return len(self.messages) > 0
     
     def get_attachment(self) -> bool:
+        """
+        Download the first attachment from the first message found in the user's Gmail inbox.
+        Returns True if an attachment is successfully downloaded, False otherwise.
+        """
         if not self.check_mail():
             self.logger.info("No roster in e-mail")
             return False
