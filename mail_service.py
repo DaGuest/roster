@@ -8,11 +8,13 @@ class MailService:
         self.service = gapi.GoogleMailAPIService()
         self.messages = None
 
-    def check_mail(self):
+    def check_mail(self) -> bool:
+        if not (self.service or self.service.get_service()):
+            return False
         self.messages = self.service.get_messages()
         return len(self.messages) > 0
     
-    def get_attachment(self):
+    def get_attachment(self) -> bool:
         if not self.check_mail():
             self.logger.info("No roster in e-mail")
             return False
