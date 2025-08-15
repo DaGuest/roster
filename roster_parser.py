@@ -7,11 +7,18 @@ from calendar_service import CalendarEvent
 
 class RosterParser:
     def __init__(self):
+        """
+        Initialize the RosterParser, setting up logger, events list, and period flag.
+        """
         self.logger = logging.getLogger(__name__)
         self.events = []
         self.period_set = False
 
     def convert_rosterpdf_to_text(self):
+        """
+        Convert the roster PDF to text, removing whitespace and newlines.
+        Returns True if successful, False otherwise.
+        """
         try:
             reader = pypdf.PdfReader(os.getcwd() + "/etc/roster.pdf")
             page = reader.pages[0]
@@ -25,6 +32,9 @@ class RosterParser:
             return False
         
     def parse_period(self):
+        """
+        Parse the period (start and end dates) from the roster text and set the period attributes.
+        """
         pattern_period_text = r"(?<=Period:)(\d{2}[A-Z][a-z]{2}\d{2}-\d{2}[A-Z][a-z]{2}\d{2})"
         pattern_single_period = r"\d\d[A-z]{3}\d\d"
         pattern_datetime = "%d%b%y"
@@ -38,6 +48,9 @@ class RosterParser:
         self.logger.info("Parsed period")
         
     def parse_flight_events(self):
+        """
+        Parse flight events from the roster text and add them to the events list.
+        """
         pattern_flight_events = r"[A-Z][a-z]{2}\d\d(?:PickUp|C\/I)(?:.*?)\[FDP\d\d:\d\d\]"
         pattern_single_event = r"KL(?:\d{4}|\d{3})[A-Z]{3}\d{8}[A-Z]{3}"
         pattern_title = r"KL(?:\d{4}|\d{3})"
@@ -56,12 +69,18 @@ class RosterParser:
         self.logger.info("Parsed flight events")
     
     def parse_sby_events(self):
+        """
+        Parse standby (SBY) events from the roster text and add them to the events list.
+        """
         pattern_SBY_event = r"[A-Z][a-z]{2}\d\dSBY\_[A-Z]{4}\d{8}\[FDP\d\d:\d\d\]"
         events_text = re.findall(pattern_SBY_event, self.text)
         self.construct_events(events_text, "Reserve")
         self.logger.info("Parsed sby events")
 
     def parse_pickup_events(self):
+        """
+        Parse pickup and check-in (Aanmeld) events from the roster text and add them to the events list.
+        """
         # Pick up events
         pattern_pickup_events = r"[A-Z][a-z]{2}\d\d(?:PickUp)(?:.*?)\d{4}"
         events_text = re.findall(pattern_pickup_events, self.text)
@@ -74,6 +93,9 @@ class RosterParser:
         self.construct_events(events_text, "Aanmelden")
     
     def parse_sim_events(self):
+        """
+        Parse simulator (SIM) events from the roster text and add them to the events list.
+        """
         pattern = r"[A-Z][a-z]{2}\d\dT(?:.*?)\[FDP\d\d:\d\d\]"
         pattern_title = r"(?<=[A-z]{3}\d\d)T.*?(?=[A-Z]\d_[A-Z]\d)"
         sim_times = {"TSLOE": 74, "TSTR": 119, "TSLPC": 74}
@@ -91,12 +113,18 @@ class RosterParser:
         self.logger.info("Parsed sim events")
     
     def parse_medical_events(self):
+        """
+        Parse medical events from the roster text and add them to the events list.
+        """
         pattern = r"[A-Z][a-z]{2}\d\dMMCS(?:.*?)\[FDP\d\d:\d\d\]"
         events_text = re.findall(pattern, self.text)
         self.construct_events(events_text, "Medical")
         self.logger.info("Parsed medical events")
 
     def parse_layover_events(self):
+        """
+        Parse layover (Dagover) events from the roster text and add them to the events list.
+        """
         pattern = r"[A-Z][a-z]{2}\d\dXH\d[A-Z]{3}"
         events_text = re.findall(pattern, self.text)
         events_text = [text + "09002100" for text in events_text]
@@ -104,6 +132,9 @@ class RosterParser:
         self.logger.info("Parsed layover events")
 
     def parse_all_events(self):
+        """
+        Parse all event types from the roster PDF and populate the events list.
+        """
         self.convert_rosterpdf_to_text()
         self.parse_period()
         self.parse_flight_events()
@@ -118,6 +149,12 @@ class RosterParser:
     ###     date_line_text: string that represents a work day line
     ###
     def get_date(self, date_line_text):
+        """
+        Construct a datetime object from a weekday-day string that fits inside the period.
+        Args:
+            date_line_text: String that represents a work day line.
+        Returns a datetime object for the event date.
+        """
         if (not self.period_set):
             self.parse_period()
         pattern_regex_date = r"[A-z]{3}\d\d"
@@ -140,6 +177,14 @@ class RosterParser:
         return return_date
     
     def get_datetimes(self, event_text, date, offset=None):
+        """
+        Construct start and end datetime objects for an event from its text and date.
+        Args:
+            event_text: The event string containing time information.
+            date: The base date for the event.
+            offset: Optional offset in minutes to adjust the start time.
+        Returns a list of two datetime objects: [start, end].
+        """
         times_together = re.search(r"\d{8}", event_text).group(0)
         times = re.findall(r"\d{4}", times_together)
         dates = []
@@ -152,9 +197,23 @@ class RosterParser:
         return dates
     
     def construct_calendar_event(self, summary, starttime, endtime):
+        """
+        Construct a CalendarEvent object from summary, start time, and end time.
+        Args:
+            summary: The event summary or title.
+            starttime: The event start time (datetime object).
+            endtime: The event end time (datetime object).
+        Returns a CalendarEvent instance.
+        """
         return CalendarEvent(summary, starttime.strftime(CalendarEvent.DATETIMESTRFFORMAT)+"Z", endtime.strftime(CalendarEvent.DATETIMESTRFFORMAT)+"Z")
     
     def construct_events(self, events, summary):
+        """
+        Construct and append CalendarEvent objects for a list of event strings with a given summary.
+        Args:
+            events: List of event strings.
+            summary: The summary/title for the events.
+        """
         for event in events:
             date = self.get_date(event)
             dates = self.get_datetimes(event, date)
