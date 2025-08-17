@@ -22,6 +22,8 @@ class CalendarEvent:
         if re.search(self.DATETIMEFORMAT, endtime):
             endtime = re.search(self.DATETIMEFORMAT, endtime).group(0)
             self.endtime = datetime.fromisoformat(endtime)
+        self.hashId:str
+        self.set_hash_id()
     
     def get_starttime_string(self):
         """
@@ -42,6 +44,13 @@ class CalendarEvent:
             event_id: The unique identifier for the event.
         """
         self.event_id = event_id
+
+    def set_hash_id(self) -> bool:
+        """
+        Sets a unique hash id to extendedProperties based on summer, starttime and endtime.
+        """
+        if self.summary and self.starttime and self.endtime:
+            self.hashId = hash(self.summary+self.get_starttime_string()+self.get_endtime_string())
 
     def compare_on_date(self, other):
         """
@@ -135,7 +144,7 @@ class CalendarService:
             new_events: List of new CalendarEvent objects to compare against existing events.
         """
         for event in self.events:
-            filteredEvents = filter(lambda x: x.starttime.date() == event.starttime.date(), new_events)
+            filteredEvents = filter(lambda x: x.hashId == event.hashId, new_events)
             for new_event in new_events:
                 if event.compare_on_date(new_event):
                     self.service.delete_event(self.calendar_id, event.event_id)

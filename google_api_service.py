@@ -193,7 +193,7 @@ class GoogleMailAPIService(GoogleAPIService):
             message_id: The ID of the message to delete (move to trash).
         """
         try:
-            self.service.users().messsages().trash(userId='me', id=message_id).execute()
+            self.service.users().messages().trash(userId='me', id=message_id).execute()
         except HttpError as error:
             self.logger.error(f"An error occurred while deleting mail: {error}")
             return None
