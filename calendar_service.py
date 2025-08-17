@@ -22,16 +22,14 @@ class CalendarEvent:
         if re.search(self.DATETIMEFORMAT, endtime):
             endtime = re.search(self.DATETIMEFORMAT, endtime).group(0)
             self.endtime = datetime.fromisoformat(endtime)
-        self.hashId:str
-        self.set_hash_id()
     
-    def get_starttime_string(self):
+    def get_starttime_string(self) -> str:
         """
         Return the start time as a string in the required format for Google Calendar API.
         """
         return self.starttime.strftime(self.DATETIMESTRFFORMAT) + "Z"
     
-    def get_endtime_string(self):
+    def get_endtime_string(self) -> str:
         """
         Return the end time as a string in the required format for Google Calendar API.
         """
@@ -45,41 +43,48 @@ class CalendarEvent:
         """
         self.event_id = event_id
 
-    def set_hash_id(self) -> bool:
-        """
-        Sets a unique hash id to extendedProperties based on summer, starttime and endtime.
-        """
-        if self.summary and self.starttime and self.endtime:
-            self.hashId = hash(self.summary+self.get_starttime_string()+self.get_endtime_string())
-
-    def compare_on_date(self, other):
+    def compare_on_date(self, other) -> bool:
         """
         Compare if this event and another event occur on the same date.
         Args:
             other: Another CalendarEvent instance.
         Returns True if both events are on the same date, False otherwise.
         """
-        return self.starttime.date() == other.starttime.date()
+        if isinstance(other, CalendarEvent):
+            return (self.starttime.date() == other.starttime.date()) and (((self.starttime > other.starttime) and (self.starttime < other.endtime)) or (self.endtime < other.endtime and self.endtime > other.starttime))
+        return NotImplemented
     
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         """
         Check if two CalendarEvents are equal based on start and end times.
         """
-        return (self.starttime == other.starttime) and (self.endtime == other.endtime)
+        if isinstance(other, CalendarEvent):
+            return (self.starttime == other.starttime) and (self.endtime == other.endtime) and (self.summary == other.summary)
+        return NotImplemented
     
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         """
         Check if this event ends before another event starts.
         """
-        return self.endtime < other.starttime
+        if isinstance(other, CalendarEvent):
+            return self.endtime < other.starttime
+        return NotImplemented
     
-    def __gt__(self, other):
+    def __gt__(self, other) -> bool:
         """
         Check if this event starts after another event ends.
         """
-        return self.starttime > other.endtime
+        if isinstance(other, CalendarEvent):
+            return self.starttime > other.endtime
+        return NotImplemented
     
-    def to_dict(self):
+    def __hash__(self):
+        """
+        Return hash based on string combination summary, starttime and endtime.
+        """
+        return hash(self.summary + self.get_starttime_string() + self.get_endtime_string())
+    
+    def to_dict(self) -> dict:
         """
         Convert the CalendarEvent to a dictionary suitable for Google Calendar API.
         Returns a dictionary with summary, start, and end time information.
@@ -102,7 +107,7 @@ class CalendarService:
         """
         self.service = gapi.GoogleCalendarAPIService()
         self.calendar_id:str = None
-        self.events:list[CalendarEvent] = []
+        self.events:set[CalendarEvent] = set()
         self.logger = logging.getLogger(__name__)
     
     def _get_calendar_id(self, calendar_name):
@@ -135,17 +140,16 @@ class CalendarService:
             if "dateTime" in item["start"] and "dateTime" in item["end"]:
                 event = CalendarEvent(item["summary"], item["start"]["dateTime"], item["end"]["dateTime"])
                 event.set_event_id(item["id"])
-                self.events.append(event)
+                self.events.add(event)
     
-    def delete_overlapping_events(self, new_events:list[CalendarEvent]):
+    def delete_overlapping_events(self, new_events:list[CalendarEvent], filteredEvents: filter):
         """
         Delete events from the calendar that overlap in date with any of the new events.
         Args:
             new_events: List of new CalendarEvent objects to compare against existing events.
         """
         for event in self.events:
-            filteredEvents = filter(lambda x: x.hashId == event.hashId, new_events)
-            for new_event in new_events:
+            for new_event in filteredEvents:
                 if event.compare_on_date(new_event):
                     self.service.delete_event(self.calendar_id, event.event_id)
                     self.logger.info("Deleting event: %s on %s", event.summary, event.starttime.date())
@@ -158,8 +162,9 @@ class CalendarService:
         Args:
             new_events: List of CalendarEvent objects to insert.
         """
-        self.delete_overlapping_events(new_events)
-        for event in new_events:
+        filteredEvents = filter(lambda x: x not in self.events, new_events)
+        self.delete_overlapping_events(new_events, filteredEvents)
+        for event in filteredEvents:
             self.service.insert_event(self.calendar_id, event.to_dict())
             self.logger.info("Inserting event: %s on %s", event.summary, event.starttime.date())
         self.logger.info("Events inserted") 
