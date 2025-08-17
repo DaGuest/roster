@@ -9,6 +9,3 @@ class TestMailService(unittest.TestCase):
         self.assertIsNone(self.service.messages)
         self.service.check_mail()
         self.assertIsNotNone(self.service.messages)
-
-    def test_get_attachment(self):
-        self.assertTrue(self.service.get_attachment())

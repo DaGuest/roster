@@ -51,7 +51,7 @@ class CalendarEvent:
         Returns True if both events are on the same date, False otherwise.
         """
         if isinstance(other, CalendarEvent):
-            return (self.starttime.date() == other.starttime.date()) and (((self.starttime > other.starttime) and (self.starttime < other.endtime)) or (self.endtime < other.endtime and self.endtime > other.starttime))
+            return (self.starttime.date() == other.starttime.date()) and (((self.starttime >= other.starttime) and (self.starttime <= other.endtime)) or (self.endtime <= other.endtime and self.endtime => other.starttime))
         return NotImplemented
     
     def __eq__(self, other) -> bool:
