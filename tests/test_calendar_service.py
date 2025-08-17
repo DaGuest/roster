@@ -25,18 +25,18 @@ class TestCalendarService(unittest.TestCase):
     def test_delete_events(self):
         self.service._get_calendar_id("KLM")
         self.service.get_events(self.period_start, self.period_end)
-        self.service.delete_overlapping_events([self.event1])
+        self.service.delete_overlapping_events([self.event1], [self.event1])
         self.service.get_events(self.period_start, self.period_end)
         self.assertEqual(len(self.service.events), 0)
     
     def test_insert_events(self):
         self.service._get_calendar_id("KLM")
         self.service.get_events(self.event4.starttime, self.event4.endtime)
-        self.service.delete_overlapping_events([self.event4])
+        self.service.delete_overlapping_events([self.event4], [self.event4])
         self.service.insert_events([self.event4])
         self.service.get_events(self.event1.starttime, self.event1.endtime)
         self.assertEqual(len(self.service.events), 1)
-        self.service.delete_overlapping_events([self.event4])
+        self.service.delete_overlapping_events([self.event4], [self.event4])
 
     def test_CalendarEvent(self):
         eventDict = {"summary": "KL1234 AMS", "start": {"dateTime": "2024-04-08T09:00:00", "timeZone": "Etc/UTC"}, "end": {"dateTime": "2024-04-08T09:50:00", "timeZone": "Etc/UTC"}}
