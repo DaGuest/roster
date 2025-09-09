@@ -19,8 +19,10 @@ To stop the service use:
 `systemctl stop roster.service`
 
 ## Installing python modules
-Install the following modules using `apt install`:
-`python3-googleapi python3-google-auth-oauthlib python3-pypdf`
+First setup a python virtual enviroment using `python -m venv <ENVIRONMENT_NAME>`
+Activate the environment using `source <ENVIRONMENT_NAME>/bin/activate
+
+Install the following modules using `pip install googleapi google-auth-oauthlib pypdf`
 
 Place credentials.json file into `roster/etc/` folder
 
