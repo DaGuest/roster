@@ -12,7 +12,7 @@ class TestCalendarService(unittest.TestCase):
         self.event2 = calendar_service.CalendarEvent("KL5678 AMS", "2024-04-08T10:00:00Z", "2024-04-08T10:50:00Z")
         self.event3 = calendar_service.CalendarEvent("KL4321 AMS", "2024-04-08T10:20:00Z", "2024-04-08T10:40:00Z")
         self.event4 = calendar_service.CalendarEvent("Reserve", "2024-04-08T09:00:00Z", "2024-04-08T20:30:00Z")
-        self.event1copy = calendar_service.CalendarEvent("KL8765 AMS", "2024-04-08T09:00:00Z", "2024-04-08T09:50:00Z")
+        self.event1copy = calendar_service.CalendarEvent("KL1234 AMS", "2024-04-08T09:00:00Z", "2024-04-08T09:50:00Z")
     
     def test_get_calendar_id(self):
         self.service._get_calendar_id("KLM")
@@ -20,23 +20,23 @@ class TestCalendarService(unittest.TestCase):
 
     def test_get_events(self):
         self.service.get_events(self.period_start, self.period_end)
-        self.assertIsNotNone(self.service.events)
+        self.assertIsNotNone(self.service.existing_events)
 
     def test_delete_events(self):
         self.service._get_calendar_id("KLM")
         self.service.get_events(self.period_start, self.period_end)
-        self.service.delete_overlapping_events([self.event1], [self.event1])
+        self.service.delete_overlapping_events([self.event1])
         self.service.get_events(self.period_start, self.period_end)
-        self.assertEqual(len(self.service.events), 0)
+        self.assertEqual(len(self.service.existing_events), 0)
     
     def test_insert_events(self):
         self.service._get_calendar_id("KLM")
         self.service.get_events(self.event4.starttime, self.event4.endtime)
-        self.service.delete_overlapping_events([self.event4], [self.event4])
+        self.service.delete_overlapping_events([self.event4])
         self.service.insert_events([self.event4])
         self.service.get_events(self.event1.starttime, self.event1.endtime)
-        self.assertEqual(len(self.service.events), 1)
-        self.service.delete_overlapping_events([self.event4], [self.event4])
+        self.assertEqual(len(self.service.existing_events), 1)
+        self.service.delete_overlapping_events([self.event4])
 
     def test_CalendarEvent(self):
         eventDict = {"summary": "KL1234 AMS", "start": {"dateTime": "2024-04-08T09:00:00", "timeZone": "Etc/UTC"}, "end": {"dateTime": "2024-04-08T09:50:00", "timeZone": "Etc/UTC"}}

@@ -107,7 +107,7 @@ class CalendarService:
         """
         self.service = gapi.GoogleCalendarAPIService()
         self.calendar_id:str = None
-        self.events:set[CalendarEvent] = set()
+        self.existing_events:set[CalendarEvent] = set()
         self.logger = logging.getLogger(__name__)
     
     def _get_calendar_id(self, calendar_name):
@@ -129,7 +129,7 @@ class CalendarService:
             starttime: The start datetime for the event search.
             endtime: The end datetime for the event search.
         """
-        self.events.clear()
+        self.existing_events.clear()
         if (self.calendar_id is None):
             self._get_calendar_id("KLM")
         self.events_list = self.service.get_events(self.calendar_id, starttime.strftime(CalendarEvent.DATETIMESTRFFORMAT) +"Z", endtime.strftime(CalendarEvent.DATETIMESTRFFORMAT) + "Z")
@@ -140,16 +140,16 @@ class CalendarService:
             if "dateTime" in item["start"] and "dateTime" in item["end"]:
                 event = CalendarEvent(item["summary"], item["start"]["dateTime"], item["end"]["dateTime"])
                 event.set_event_id(item["id"])
-                self.events.add(event)
+                self.existing_events.add(event)
     
-    def delete_overlapping_events(self, new_events:list[CalendarEvent], filteredEvents: filter):
+    def delete_overlapping_events(self, non_existing_events: list[CalendarEvent]):
         """
         Delete events from the calendar that overlap in date with any of the new events.
         Args:
-            new_events: List of new CalendarEvent objects to compare against existing events.
+            non_existing_events: List of CalendarEvent objects to check for overlaps.
         """
-        for event in self.events:
-            for new_event in filteredEvents:
+        for event in self.existing_events:
+            for new_event in non_existing_events:
                 if event.compare_on_date(new_event):
                     self.service.delete_event(self.calendar_id, event.event_id)
                     self.logger.info("Deleting event: %s on %s", event.summary, event.starttime.date())
@@ -162,9 +162,9 @@ class CalendarService:
         Args:
             new_events: List of CalendarEvent objects to insert.
         """
-        filteredEvents = filter(lambda x: x not in self.events, new_events)
-        self.delete_overlapping_events(new_events, filteredEvents)
-        for event in filteredEvents:
+        non_existing_events = list(filter(lambda new_event: new_event not in self.existing_events, new_events))
+        self.delete_overlapping_events(non_existing_events)
+        for event in non_existing_events:
             self.service.insert_event(self.calendar_id, event.to_dict())
             self.logger.info("Inserting event: %s on %s", event.summary, event.starttime.date())
         self.logger.info("Events inserted") 
