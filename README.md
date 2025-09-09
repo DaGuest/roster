@@ -20,7 +20,7 @@ To stop the service use:
 
 ## Installing python modules
 First setup a python virtual enviroment using `python -m venv <ENVIRONMENT_NAME>`
-Activate the environment using `source <ENVIRONMENT_NAME>/bin/activate
+Activate the environment using `source <ENVIRONMENT_NAME>/bin/activate`
 
 Install the following modules using `pip install googleapi google-auth-oauthlib pypdf`
 
