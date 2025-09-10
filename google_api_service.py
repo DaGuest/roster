@@ -1,8 +1,9 @@
 import os.path
-
+import logging
 from google.auth.transport.requests import Request
 from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
+from google.auth.external_account_authorized_user import Credentials as ExternalAccountCredentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.discovery import Resource
@@ -14,11 +15,11 @@ class GoogleAPIService:
     service_metadata = {"gmail": {"version":"v1","scope": "https://www.googleapis.com/auth/gmail.modify"}, 
                "calendar": {"version": "v3", "scope": "https://www.googleapis.com/auth/calendar"}}
     scopes:list[str] = [service_metadata["calendar"]["scope"], service_metadata["gmail"]["scope"]]
-    scope:str = None
-    version:str = None
-    creds = None
-    service_name:str = None
-    service = None
+    scope:str
+    version:str
+    creds:Credentials|ExternalAccountCredentials
+    service_name:str
+    logger:logging.Logger
 
     def __init__(self, service_name:str):
         """
@@ -28,6 +29,7 @@ class GoogleAPIService:
         self.service_name:str = service_name
         self.version:str = self.service_metadata[service_name]["version"]
         self.scope:str = self.service_metadata[service_name]["scope"]
+        self.logger = logging.getLogger(__name__)
         self.get_credentials()
         self.get_service()
 

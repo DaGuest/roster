@@ -6,8 +6,10 @@ import google_api_service as gapi
 class CalendarEvent:    
     DATETIMEFORMAT = r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}"
     DATETIMESTRFFORMAT = "%Y-%m-%dT%H:%M:%S"
+    summary:str
+    event_id:str
 
-    def __init__(self, summary, starttime, endtime):
+    def __init__(self, summary:str, starttime:str, endtime:str):
         """
         Initialize a CalendarEvent with summary, start time, and end time.
         Args:
@@ -16,12 +18,12 @@ class CalendarEvent:
             endtime: The end time string (ISO format or containing ISO format).
         """
         self.summary = summary
-        if re.search(self.DATETIMEFORMAT, starttime):
-            starttime = re.search(self.DATETIMEFORMAT, starttime).group(0)
-            self.starttime = datetime.fromisoformat(starttime)
-        if re.search(self.DATETIMEFORMAT, endtime):
-            endtime = re.search(self.DATETIMEFORMAT, endtime).group(0)
-            self.endtime = datetime.fromisoformat(endtime)
+        starttime_formatted:re.Match[str]|None = re.search(self.DATETIMEFORMAT, starttime)
+        endtime_formatted:re.Match[str]|None = re.search(self.DATETIMEFORMAT, endtime)
+        if starttime_formatted is not None:
+            self.starttime = datetime.fromisoformat(starttime_formatted.group(0))
+        if endtime_formatted is not None:
+            self.endtime = datetime.fromisoformat(endtime_formatted.group(0))
     
     def get_starttime_string(self) -> str:
         """
@@ -35,7 +37,7 @@ class CalendarEvent:
         """
         return self.endtime.strftime(self.DATETIMESTRFFORMAT) + "Z"
 
-    def set_event_id(self, event_id):
+    def set_event_id(self, event_id:str):
         """
         Set the event ID for this CalendarEvent.
         Args:
@@ -101,16 +103,21 @@ class CalendarEvent:
                 }
 
 class CalendarService:
+    service:gapi.GoogleCalendarAPIService
+    calendar_id:str
+    existing_events:set[CalendarEvent]
+    logger:logging.Logger
+
     def __init__(self):
         """
         Initialize the CalendarService, setting up the Google Calendar API service and event list.
         """
         self.service = gapi.GoogleCalendarAPIService()
-        self.calendar_id:str = None
-        self.existing_events:set[CalendarEvent] = set()
+        self.calendar_id = ''
+        self.existing_events = set()
         self.logger = logging.getLogger(__name__)
     
-    def _get_calendar_id(self, calendar_name):
+    def _get_calendar_id(self, calendar_name:str):
         """
         Retrieve and set the calendar ID for a given calendar name.
         Args:
@@ -130,7 +137,7 @@ class CalendarService:
             endtime: The end datetime for the event search.
         """
         self.existing_events.clear()
-        if (self.calendar_id is None):
+        if not self.calendar_id:
             self._get_calendar_id("KLM")
         self.events_list = self.service.get_events(self.calendar_id, starttime.strftime(CalendarEvent.DATETIMESTRFFORMAT) +"Z", endtime.strftime(CalendarEvent.DATETIMESTRFFORMAT) + "Z")
         self.logger.info("Existing events retreived")
@@ -142,7 +149,7 @@ class CalendarService:
                 event.set_event_id(item["id"])
                 self.existing_events.add(event)
     
-    def delete_overlapping_events(self, non_existing_events: list[CalendarEvent]):
+    def delete_overlapping_events(self, non_existing_events:list[CalendarEvent]):
         """
         Delete events from the calendar that overlap in date with any of the new events.
         Args:
