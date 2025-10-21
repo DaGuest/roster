@@ -44,7 +44,7 @@ class RosterParser:
         periods:list[str] = re.findall(pattern_single_period, period_text)
         
         self.start_period = datetime.strptime(periods[0], pattern_datetime)
-        self.end_period = datetime.strptime(periods[1], pattern_datetime)
+        self.end_period = datetime.strptime(periods[1], pattern_datetime) + timedelta(hours=23, minutes=59)
         self.period_set = True
         self.logger.info("Parsed period")
         
@@ -151,10 +151,6 @@ class RosterParser:
         self.parse_sim_events()
         self.parse_layover_events()
     
-    ### Constructs a datetime from a weekday-day string that fits inside the period
-    ### Arg: 
-    ###     date_line_text: string that represents a work day line
-    ###
     def get_date(self, date_line_text):
         """
         Construct a datetime object from a weekday-day string that fits inside the period.

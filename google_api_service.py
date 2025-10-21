@@ -20,6 +20,7 @@ class GoogleAPIService:
     creds:Credentials|ExternalAccountCredentials
     service_name:str
     logger:logging.Logger
+    service = None
 
     def __init__(self, service_name:str):
         """

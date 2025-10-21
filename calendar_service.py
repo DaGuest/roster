@@ -8,6 +8,8 @@ class CalendarEvent:
     DATETIMESTRFFORMAT = "%Y-%m-%dT%H:%M:%S"
     summary:str
     event_id:str
+    starttime:datetime
+    endtime:datetime
 
     def __init__(self, summary:str, starttime:str, endtime:str):
         """
@@ -144,7 +146,7 @@ class CalendarService:
 
         # Create CalendarEvents from acquired item list
         for item in self.events_list["items"]:
-            if "dateTime" in item["start"] and "dateTime" in item["end"]:
+            if "dateTime" in item["start"] and "dateTime" in item["end"] and "summary" in item:
                 event = CalendarEvent(item["summary"], item["start"]["dateTime"], item["end"]["dateTime"])
                 event.set_event_id(item["id"])
                 self.existing_events.add(event)
